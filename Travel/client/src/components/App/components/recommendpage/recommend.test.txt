@@ -1,0 +1,162 @@
+// import React from 'react';
+// import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+// import Recommendations, { calculateRecommendations } from './index.js';
+// import { ThemeProvider, createTheme } from '@mui/material/styles';
+// import { MemoryRouter } from 'react-router-dom';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import axios from 'axios';
+// import store from '../../store/store';
+// import { Provider } from 'react-redux';
+// global.fetch = jest.fn();
+
+// const mockTheme = createTheme({
+//   typography: { fontFamily: 'Montserrat' },
+//   palette: { mode: 'dark', primary: { main: '#b3cde0' }, text: { primary: '#b3cde0' } },
+// });
+
+// const renderWithProviders = (ui) => {
+//   return render(
+// 	<Provider store={store}>
+// 		<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+// 			{ui}
+// 		</MemoryRouter>
+//     </Provider>
+// 	);
+// };
+
+// jest.mock('@mui/x-date-pickers/LocalizationProvider', () => ({
+// 	LocalizationProvider: ({ children }) => <div>{children}</div>,
+// }));
+
+// jest.mock('@mui/x-date-pickers/DatePicker', () => ({
+// 	DatePicker: ({ children }) => <div>{children}</div>,
+// }));
+  
+
+// describe('Recommendations Component', () => {
+	
+//   beforeEach(() => {
+// 	fetch.mockClear();
+//   });
+
+//   test('shows CircularProgress while loading', () => {
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+// 	renderWithProviders(<Recommendations />);
+// 	expect(screen.getByRole('progressbar')).toBeInTheDocument();
+//   });
+
+//   test('displays recommendations after successful fetch', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Paris', safety_score: 8, temperature: 18, country: 'France', daily_living_cost: 120, languages_spoken: 'French' },
+// 	  { city_name: 'Rome', safety_score: 6, temperature: 22, country: 'Italy', daily_living_cost: 100, languages_spoken: 'Italian' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('Paris')).toBeInTheDocument();
+// 	  expect(screen.getByText('Rome')).toBeInTheDocument();
+// 	});
+//   });
+
+//   test('shows error message when fetch fails', async () => {
+// 	fetch.mockRejectedValueOnce(new Error('Failed to fetch cities'));
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('Failed to fetch cities')).toBeInTheDocument();
+// 	});
+//   });
+
+//   test('shows no recommendations message when no data', async () => {
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('No recommendations available.')).toBeInTheDocument();
+// 	});
+//   });
+
+//   test('renders navigation buttons', () => {
+// 	renderWithProviders(<Recommendations />);
+// 	expect(screen.getByText(/About Us/i)).toBeInTheDocument();
+// 	expect(screen.getByText(/Blog/i)).toBeInTheDocument();
+// 	expect(screen.getByText(/Filter/i)).toBeInTheDocument();
+// 	expect(screen.getByText(/Search/i)).toBeInTheDocument();
+// 	expect(screen.getByText(/Profile/i)).toBeInTheDocument();
+//   });
+
+//   test('limits recommendations to top 3', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Paris', safety_score: 8, temperature: 18, country: 'France', daily_living_cost: 120, languages_spoken: 'French' },
+// 	  { city_name: 'Rome', safety_score: 6, temperature: 22, country: 'Italy', daily_living_cost: 100, languages_spoken: 'Italian' },
+// 	  { city_name: 'Berlin', safety_score: 7, temperature: 16, country: 'Germany', daily_living_cost: 85, languages_spoken: 'German' },
+// 	  { city_name: 'Madrid', safety_score: 9, temperature: 24, country: 'Spain', daily_living_cost: 95, languages_spoken: 'Spanish' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  const items = screen.getAllByRole('heading', { level: 6 });
+// 	  expect(items).toHaveLength(3);
+// 	});
+//   });
+
+//   test('displays safety score in recommendations', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Paris', safety_score: 8, temperature: 18, country: 'France', daily_living_cost: 120, languages_spoken: 'French' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('Safety: 8/10')).toBeInTheDocument();
+// 	});
+//   });
+
+//   test('displays temperature in recommendations', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Rome', safety_score: 6, temperature: 22, country: 'Italy', daily_living_cost: 100, languages_spoken: 'Italian' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('Temp: 22°C')).toBeInTheDocument();
+// 	});
+//   });
+
+//   test('displays daily living cost in recommendations', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Berlin', safety_score: 7, temperature: 16, country: 'Germany', daily_living_cost: 85, languages_spoken: 'German' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('Cost: $85/day')).toBeInTheDocument();
+// 	});
+//   });
+
+//   test('displays languages spoken in recommendations', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Madrid', safety_score: 9, temperature: 24, country: 'Spain', daily_living_cost: 95, languages_spoken: 'Spanish' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  expect(screen.getByText('Language: Spanish')).toBeInTheDocument();
+// 	});
+//   });
+
+//   // Test 12: Calculates scores correctly in rendering
+//   test('renders destinations with correct scores', async () => {
+// 	const mockCities = [
+// 	  { city_name: 'Paris', safety_score: 8, temperature: 18, country: 'France', daily_living_cost: 120, languages_spoken: 'French' },
+// 	];
+// 	fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCities) });
+// 	renderWithProviders(<Recommendations />);
+// 	await waitFor(() => {
+// 	  const scoreText = screen.getByText(/Score: \d+\.\d+%/);
+// 	  expect(scoreText).toBeInTheDocument();
+// 	  const score = parseFloat(scoreText.textContent.match(/\d+\.\d+/)[0]);
+// 	  expect(score).toBeGreaterThan(0);
+// 	  expect(score).toBeLessThanOrEqual(100);
+// 	});
+//   });
+  
+// });
