@@ -1,0 +1,8 @@
+config.js
+node_modules/
+client/node_modules/
+client/build/
+serviceAccountKey.json
+package-lock.json
+client/package-lock.json
+
