@@ -196,16 +196,141 @@ function Recommendations() {
     };
 
     return (
-        <ThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Navbar />
+        <Navbar/>
         <Grid container spacing={2} p={4}>
-            <Grid item xs={12} p={0} l = {4}>
-                <Typography variant="h4" textAlign={'center'} sx={{ fontWeight: 1000, fontSize: 50}}> &nbsp;RECOMMENDATIONS</Typography>
+          <Grid item xs={12} p={0}>
+            <Typography variant="h4" textAlign={'center'} sx={{ fontWeight: 1000, fontSize: 50 }}>
+              RECOMMENDATIONS
+            </Typography>
+          </Grid>
+          
+          {/* Show preferred airport if it exists */}
+          {userState[0].preferred_airport && (
+            <Grid item xs={12}>
+              <Typography sx={{ fontWeight: 'bold', mb: 1 }}>
+                Preferred Departure Airport: 
+              </Typography>
+              <Typography>
+                {userState[0].preferred_airport} {preferredAirportCity ? `(${preferredAirportCity})` : ''}
+              </Typography>
             </Grid>
+          )}
+          
+          <Grid item xs={2} container spacing={2}>
+            <Grid item xs={12}>
+              <Autocomplete
+                options={cities}
+                getOptionLabel={(option) => option.label}
+                value={selectedDepartures}
+                onChange={(event, newValue) => setSelectedDepartures(newValue)}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    label="Departure Location" 
+                    placeholder="Select your departure airport" 
+                    helperText={!selectedDepartures ? "Select your departure location to begin" : ""}
+                    sx = {{width: "100%", input: {
+                      color: "#b3cde0",
+                    },
+                    "& .MuiInputLabel-root": {
+                        color: "#b3cde0",
+                    },
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#b3cde0',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#ececec',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#F95D44',
+                      },
+                    },
+                    "& .MuiSvgIcon-root": {
+                        color: "#b3cde0",
+                    },}}
+                  />
+                )}
+              />
+              <Grid paddingTop={3}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Departure Date"
+                    slotProps={{
+                      textField: {
+                        id: "departureDate",
+                        helperText: selectedDepartures && !travelDate 
+                          ? "Select a date to see recommendations" 
+                          : !selectedDepartures 
+                            ? "First select a departure location above" 
+                            : "Recommendations will update automatically",
+                        sx: { width: "100%",
+                          input: {
+                            color: "#b3cde0",
+                          },
+                          "& .MuiInputLabel-root": {
+                            color: "#b3cde0",
+                          },
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: '#b3cde0',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#ececec',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#F95D44',
+                            },
+                          },
+                          "& .MuiSvgIcon-root": {
+                            color: "#b3cde0",
+                          },
+                        }
+                      }
+                    }}
+                    onChange={(newValue) =>{
+                      setDate(newValue);
+                    }}
+                    disabled={!selectedDepartures}
+                    disablePast
+                  />
+                </LocalizationProvider>
+              </Grid>
+            </Grid>
+          </Grid>
+          
+          <Grid item xs={10}>
+            {loading && <Typography>Loading your personalized recommendations...</Typography>}
+            {error && <Typography color="error">Error: {error}</Typography>}
+            {!loading && !error && recommendations.length > 0 && (
+              <Grid container spacing={2}>
+                {recommendations.map((rec, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <DestinationCard 
+                      destination={rec}
+                      showDetails={showDetails[index]}
+                      onToggleDetails={() => toggleDetails(index)}
+                      departureCode={selectedDepartures.code}
+                      departureDate={travelDate?.toISOString().substring(0, 10)}
+                      flightPrice={recomFlights && recomFlights[index] && recomFlights[index].price ? recomFlights[index].price.total : null}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+            {!loading && !error && recommendations.length === 0 && (
+              <Typography>
+                {selectedDepartures && travelDate 
+                  ? "No recommendations available for your criteria." 
+                  : "Select your departure location and travel date to see personalized recommendations."}
+              </Typography>
+            )}
+          </Grid>
         </Grid>
-        </ThemeProvider>
+      </ThemeProvider>
     );
-}
+  }
 
-//export default Recommendations;
+export default Recommendations;
