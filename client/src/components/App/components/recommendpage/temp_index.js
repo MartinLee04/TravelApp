@@ -5,11 +5,13 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
+import Divider from '@mui/material/Divider';
+import Collapse from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import { InputAdornment } from '@mui/material';
@@ -17,10 +19,16 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import HomeIcon from '@mui/icons-material/Home';
 import MobileStepper from '@mui/material/MobileStepper';
-
 import Navbar from '../navbar';
+import Autocomplete from '@mui/material/Autocomplete';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import axios from 'axios';
+import DestinationCard from './destinationcard';
 
 import {localpath} from '../../localpath'
+
 
 
 //redux import
@@ -58,8 +66,6 @@ const getDesignTokens = (mode) => ({
 });
 
 
-
-//Started writing code here
 //WEIGTS is the weighting of how different layers of filter will be weighed for suggestion
 const WEIGHTS = {
   safety: 0.3,
@@ -75,7 +81,11 @@ function Recommendations() {
 
     const [recommendations, setRecommendations] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState(null);    
+    const [error, setError] = React.useState(null);
+    const [departureLocations, setDepartureLocations] = useState([]);
+    const [selectedDepartures, setSelectedDepartures] = useState([]);
+    const [departureDate, setDepartureDate] = useState(null);
+    const [cities, setCities] = useState([]);
 
     //redux
     const loginState = useSelector(state => state.login.value)
@@ -90,6 +100,9 @@ function Recommendations() {
 
     const [username, setusername] = React.useState('');
     const [password, setpassword] = React.useState('');
+    const [travelDate, setDate] = React.useState('');
+    const [travelDest, setTravelDest] = React.useState([]);
+    const [showDet, setDet] = React.useState([false,false,false]);
 
     const toggleMode = (step) => {
         setMode(
@@ -104,6 +117,16 @@ function Recommendations() {
     const handlePassChange = (event) => {
         setpassword(event.target.value)
     }
+
+    const [searchParamsRecom, setSearchParamsRecom] = React.useState({
+      // Dates in 'YYYY-MM-DD' format
+      originCode: 'YYZ',
+      destinationCode: '',
+      departureDate: '2025-04-09',
+      returnDate: '2025-04-15',
+      currency: 'USD',
+      adults: 1
+    });
 
     //Actual recommendation feature starts here
     useEffect(() => {
